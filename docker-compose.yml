@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  global-auth:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    restart: always
+    # Puedes añadir variables de entorno si tu aplicación las usa
+    # environment:
+    #   - API_KEY=tu_api_key
+    #   - DATABASE_URL=tu_url_de_base_de_datos
