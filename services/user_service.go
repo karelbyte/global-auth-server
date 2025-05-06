@@ -7,7 +7,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-// User representa la estructura de la tabla users
+// User represents the structure of the users table
 type User struct {
 	ID              string  `db:"id" json:"id"`
 	Username        string  `db:"username" json:"username"`
@@ -33,7 +33,7 @@ type Role struct {
 	Description string `db:"description" json:"description"`
 }
 
-// GetUserByEmail busca un usuario por email usando sqlx y la conexión singleton
+// Getuserbyemail looks for a user by email using SQLX and the Singleton connection
 func GetUserByEmail(email string) (*User, error) {
 	db := libs.GetDB()
 	sqlxdb := sqlx.NewDb(db, "sqlserver")

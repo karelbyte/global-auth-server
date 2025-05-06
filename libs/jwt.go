@@ -11,7 +11,7 @@ import (
 
 var privateKey *rsa.PrivateKey
 
-func loadPrivateKey() (*rsa.PrivateKey, error) {
+func LoadPrivateKey() (*rsa.PrivateKey, error) {
 	if privateKey != nil {
 		return privateKey, nil
 	}
@@ -28,7 +28,7 @@ func loadPrivateKey() (*rsa.PrivateKey, error) {
 }
 
 func GenerateJWT(payload map[string]any, duration time.Duration) (string, int64, error) {
-	key, err := loadPrivateKey()
+	key, err := LoadPrivateKey()
 	if err != nil {
 		return "", 0, err
 	}

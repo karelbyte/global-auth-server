@@ -10,31 +10,60 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type DBConfig struct {
+	Host     string
+	Port     string
+	User     string
+	Password string
+	Name     string
+}
+
 var (
 	dbInstance *sql.DB
 	once       sync.Once
 )
 
+// Carga la configuración desde variables de entorno
+func LoadDBConfigFromEnv() DBConfig {
+	_ = godotenv.Load()
+
+	return DBConfig{
+		Host:     os.Getenv("DB_HOST"),
+		Port:     os.Getenv("DB_PORT"),
+		User:     os.Getenv("DB_USER"),
+		Password: os.Getenv("DB_PASSWORD"),
+		Name:     os.Getenv("DB_NAME"),
+	}
+}
+
+// Set a new connection to the database using the conference
+func NewDB(cfg DBConfig) (*sql.DB, error) {
+	connString := fmt.Sprintf(
+		"server=%s;port=%s;user id=%s;password=%s;database=%s",
+		cfg.Host, cfg.Port, cfg.User, cfg.Password, cfg.Name,
+	)
+
+	db, err := sql.Open("sqlserver", connString)
+	if err != nil {
+		return nil, fmt.Errorf("error abriendo la conexión: %w", err)
+	}
+
+	if err = db.Ping(); err != nil {
+		return nil, fmt.Errorf("no se pudo hacer ping a la base de datos: %w", err)
+	}
+
+	return db, nil
+}
+
+// Singleton: devuelve una instancia compartida
 func GetDB() *sql.DB {
 	once.Do(func() {
-		_ = godotenv.Load()
-
-		host := os.Getenv("DB_HOST")
-		port := os.Getenv("DB_PORT")
-		user := os.Getenv("DB_USER")
-		password := os.Getenv("DB_PASSWORD")
-		database := os.Getenv("DB_NAME")
-
-		connString := fmt.Sprintf("server=%s;port=%s;user id=%s;password=%s;database=%s", host, port, user, password, database)
-
-		var err error
-		dbInstance, err = sql.Open("sqlserver", connString)
+		cfg := LoadDBConfigFromEnv()
+		db, err := NewDB(cfg)
 		if err != nil {
-			panic(fmt.Sprintf("Error connecting to the database: %s", err))
+			panic(err) // sigue siendo crítico si falla la conexión
 		}
-		if err = dbInstance.Ping(); err != nil {
-			panic(fmt.Sprintf("Ping could not be done to the database: %s", err))
-		}
+		dbInstance = db
 	})
 	return dbInstance
 }

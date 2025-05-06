@@ -41,7 +41,7 @@ var (
 	onceLogSender     sync.Once
 )
 
-// GetLogSender devuelve la única instancia de LogSender.
+// Getlogsender returns the only instance of Logsender.
 func GetLogSender(config LogSenderConfig) *LogSender {
 	onceLogSender.Do(func() {
 		logSenderInstance = NewLogSender(config)
@@ -143,8 +143,14 @@ func (ls *LogSender) sendLogs(logs []LogEntry) {
                 break
             }
 
-            fmt.Printf("Error sending log entry (attempt %d): Status Code: %d. Retrying in %s...\n",
-                retries+1, resp.StatusCode, ls.config.RetryDelay)
+            if err != nil {
+				fmt.Printf("Error sending log entry (attempt %d): %v. Retrying in %s...\n",
+					retries+1, err, ls.config.RetryDelay)
+			} else if resp != nil {
+				fmt.Printf("Error sending log entry (attempt %d): Status Code: %d. Retrying in %s...\n",
+					retries+1, resp.StatusCode, ls.config.RetryDelay)
+				defer resp.Body.Close()
+			}
             if resp != nil {
                 defer resp.Body.Close()
             }
