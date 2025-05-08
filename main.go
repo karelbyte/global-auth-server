@@ -21,21 +21,16 @@ package main
 
 import (
 	"fmt"
-	"os"
-
-	"global-auth-server/controllers"
-
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
-
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
+	"global-auth-server/routes"
+	"os"
 
 	_ "global-auth-server/docs"
 )
 
 func main() {
-	
+
 	_ = godotenv.Load()
 
 	// Set Gin mode from environment variable or default to release
@@ -60,13 +55,8 @@ func main() {
 	// Set trusted proxies (for production, set your proxy IPs or use "localhost" for local dev)
 	r.SetTrustedProxies([]string{"127.0.0.1", "localhost"})
 
-	r.GET("/", controllers.Home)
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	// Route group with prefix /API
-	api := r.Group("/api")
-	{
-		api.POST("/auth/login", controllers.Login)
-	}
+	// App routes
+	routes.RegisterRoutes(r)
 
 	addr := fmt.Sprintf("%s:%s", host, port)
 	fmt.Printf("Server running at http://%s\n", addr)
