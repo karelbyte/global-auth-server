@@ -21,12 +21,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/joho/godotenv"
+	_ "global-auth-server/docs"
 	"global-auth-server/routes"
 	"os"
-
-	_ "global-auth-server/docs"
 )
 
 func main() {
@@ -50,6 +50,7 @@ func main() {
 	}
 
 	r := gin.New()
+	r.Use(cors.Default())
 	r.Use(gin.Logger(), gin.Recovery())
 	r.LoadHTMLGlob("templates/*")
 	// Set trusted proxies (for production, set your proxy IPs or use "localhost" for local dev)

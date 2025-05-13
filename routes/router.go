@@ -16,5 +16,6 @@ func RegisterRoutes(r *gin.Engine) {
 	api := r.Group("/api")
 	{
 		api.POST("/auth/login", controllers.Login)
+		api.POST("/auth/can-login", controllers.CanLogin)
 	}
 }

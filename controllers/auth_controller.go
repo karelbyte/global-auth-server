@@ -3,7 +3,7 @@ package controllers
 import (
 	"net/http"
 	"time"
-
+"encoding/base64"
 	"global-auth-server/libs"
 	"global-auth-server/services"
 
@@ -74,7 +74,14 @@ func Login(c *gin.Context) {
 	}
 
 	// Validate password using bcrypt
-	if user.Password == nil || bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(req.Password)) != nil {
+	decodedPasswordBytes, err := base64.StdEncoding.DecodeString(req.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid password format"})
+		return
+	}
+	
+	decodedPassword := string(decodedPasswordBytes)
+	if user.Password == nil || bcrypt.CompareHashAndPassword([]byte(*user.Password), []byte(decodedPassword)) != nil {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid user or password"})
 		return
 	}
@@ -125,6 +132,33 @@ func Login(c *gin.Context) {
 	loggingService.Log(user.ID, c.Request.URL.Path, nil, gin.H{"message": "Login successful", "user": userResponse, "token": token, "expired_at": expiredAt}, "LOGIN_SUCCESS")
 
 	c.JSON(http.StatusOK, loginResponse)
+}
+
+func CanLogin(c *gin.Context) {
+	var loginDto LoginRequest
+	if err := c.ShouldBindJSON(&loginDto); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid request payload"})
+		return
+	}
+
+	response, err := services.CanLogin(loginDto.Email)
+	if err != nil {
+		// Determinar el código de estado HTTP basado en el tipo de error
+		var statusCode int
+		if err.Error() == "el usuario con email '"+loginDto.Email+"' no existe o está inactivo" {
+			statusCode = http.StatusUnauthorized // 401
+		} else if err.Error() == "el usuario '"+loginDto.Email+"' ha excedido el uso de la contraseña actual, actualícela" {
+			statusCode = http.StatusForbidden // 403 podría ser más apropiado
+		} else {
+			statusCode = http.StatusInternalServerError // 500 para otros errores
+			// Log the error for debugging
+			c.Error(err)
+		}
+		c.JSON(statusCode, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, response)
 }
 
 // Home godoc

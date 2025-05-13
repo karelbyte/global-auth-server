@@ -1,6 +1,7 @@
 package services
 
 import (
+	"fmt"
 	"global-auth-server/libs"
 	"os"
 	"sync"
@@ -18,6 +19,11 @@ var (
 	loggingServiceInstance *LoggingService
 	once                   sync.Once
 )
+
+type LoginResponse struct {
+	Roles           []Role `json:"roles"`
+	Status int      `json:"status"`
+}
 
 // Newloggingservice creates and initializes the only instance of loggingservice.
 // The logger configuration is defined here.
@@ -52,4 +58,32 @@ func (ls *LoggingService) Stop() {
 	if ls.logSender != nil {
 		ls.logSender.Stop()
 	}
+}
+
+func CanLogin(email string) (*LoginResponse, error) {
+	user, err := GetUserByEmail(email)
+	if err != nil {
+		return nil, fmt.Errorf("error fetching user: %w", err)
+	}
+
+	if user == nil || user.Password == nil || !user.IsActive {
+		return nil, fmt.Errorf("el usuario con email '%s' no existe o está inactivo", email)
+	}
+
+	if user.Logins != nil && *user.Logins >= 30 {
+		return nil, fmt.Errorf("el usuario '%s' ha excedido el uso de la contraseña actual, actualícela", email)
+	}
+
+	roles, err := GetRolesByUserID(user.ID)
+	
+	if err != nil {
+		return nil, fmt.Errorf("error fetching roles for user '%s': %w", email, err)
+	}
+	
+	response := &LoginResponse{
+		Roles:  roles,
+		Status: 200,
+	}
+
+	return response, nil
 }
