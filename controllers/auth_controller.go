@@ -1,12 +1,11 @@
 package controllers
 
 import (
-	"net/http"
-	"time"
-"encoding/base64"
+	"encoding/base64"
 	"global-auth-server/libs"
 	"global-auth-server/services"
-
+	"net/http"
+	"time"
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt"
 )
