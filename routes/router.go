@@ -2,6 +2,7 @@ package routes
 
 import (
 	"global-auth-server/controllers"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
@@ -17,5 +18,8 @@ func RegisterRoutes(r *gin.Engine) {
 	{
 		api.POST("/auth/login", controllers.Login)
 		api.POST("/auth/can-login", controllers.CanLogin)
+		api.GET("/health", func(c *gin.Context) {
+			c.Status(http.StatusOK)
+		})
 	}
 }

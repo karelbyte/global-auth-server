@@ -128,7 +128,7 @@ func Login(c *gin.Context) {
 		ExpiredAt: expiredAt,
 	}
 
-	loggingService.Log(user.ID, c.Request.URL.Path, nil, gin.H{"message": "Login successful", "user": userResponse, "token": token, "expired_at": expiredAt}, "LOGIN_SUCCESS")
+	loggingService.Log(user.ID, c.Request.URL.Path, nil, gin.H{"message": "Login successful", "user": userResponse.Email}, "LOGIN_SUCCESS")
 
 	c.JSON(http.StatusOK, loginResponse)
 }
